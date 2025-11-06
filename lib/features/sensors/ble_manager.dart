@@ -1,42 +1,143 @@
-
 import 'dart:async';
+
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 enum SensorState { off, scanning, connecting, ready, streaming }
 
 class BleManager {
-  final _state = StreamController<SensorState>.broadcast();
-  final _hr = StreamController<int>.broadcast();
-  Stream<SensorState> get state => _state.stream;
-  Stream<int> get heartRate => _hr.stream;
-  BluetoothDevice? _device;
+  static const _heartRateServiceShortId = '180d';
+  static const _heartRateMeasurementShortId = '2a37';
 
-  Future<void> connectPolarH10() async {
-    _state.add(SensorState.scanning);
-    FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
-    await for (final res in FlutterBluePlus.scanResults) {
-      final hit = res.where((r) => r.device.platformName.toLowerCase().contains('polar'));
-      if (hit.isNotEmpty) {
-        FlutterBluePlus.stopScan();
-        final dev = hit.first.device;
-        _device = dev;
-        _state.add(SensorState.connecting);
-        await dev.connect();
-        _state.add(SensorState.ready);
-        final services = await dev.discoverServices();
-        final hrService = services.firstWhere((s) => s.uuid.str.toLowerCase().contains('180d'), orElse: ()=>services.first);
-        final hrChar = hrService.characteristics.firstWhere((c) => c.uuid.str.toLowerCase().contains('2a37'), orElse: ()=>hrService.characteristics.first);
-        await hrChar.setNotifyValue(true);
-        _state.add(SensorState.streaming);
-        hrChar.onValueReceived.listen((data) {
-          if (data.isEmpty) return;
-          final bpm = data.length > 1 ? data[1] : 0;
-          _hr.add(bpm);
-        });
-        break;
-      }
+  final _state = StreamController<SensorState>.broadcast();
+  final _heartRate = StreamController<int>.broadcast();
+
+  Stream<SensorState> get state => _state.stream;
+  Stream<int> get heartRate => _heartRate.stream;
+
+  BluetoothDevice? _device;
+  StreamSubscription<List<int>>? _hrSubscription;
+  SensorState _currentState = SensorState.off;
+
+  SensorState get currentState => _currentState;
+
+  void _emitState(SensorState state) {
+    _currentState = state;
+    if (!_state.isClosed) {
+      _state.add(state);
     }
   }
 
-  Future<void> disconnect() async { if (_device!=null) await _device!.disconnect(); _state.add(SensorState.off); }
+  Future<bool> connectPolarH10({Duration scanTimeout = const Duration(seconds: 5)}) async {
+    _emitState(SensorState.scanning);
+
+    try {
+      await FlutterBluePlus.startScan(timeout: scanTimeout);
+
+      final scanMatch = await FlutterBluePlus.scanResults
+          .asyncExpand((results) => Stream.fromIterable(results))
+          .timeout(scanTimeout, onTimeout: (sink) => sink.close())
+          .firstWhere(
+            (result) => result.device.platformName.toLowerCase().contains('polar'),
+          );
+
+      _device = scanMatch.device;
+    } on TimeoutException catch (_) {
+      _emitState(SensorState.off);
+      return false;
+    } on StateError catch (_) {
+      _emitState(SensorState.off);
+      return false;
+    } on Exception {
+      _emitState(SensorState.off);
+      return false;
+    } finally {
+      await FlutterBluePlus.stopScan();
+    }
+
+    final device = _device;
+    if (device == null) {
+      _emitState(SensorState.off);
+      return false;
+    }
+
+    _emitState(SensorState.connecting);
+    try {
+      await device.connect(timeout: const Duration(seconds: 10));
+    } on Exception {
+      await disconnect();
+      return false;
+    }
+
+    _emitState(SensorState.ready);
+
+    final services = await device.discoverServices();
+    BluetoothService? hrService;
+    for (final service in services) {
+      final id = service.uuid.str.toLowerCase();
+      if (id.contains(_heartRateServiceShortId)) {
+        hrService = service;
+        break;
+      }
+    }
+    if (hrService == null) {
+      await disconnect();
+      return false;
+    }
+
+    BluetoothCharacteristic? hrCharacteristic;
+    for (final characteristic in hrService.characteristics) {
+      final id = characteristic.uuid.str.toLowerCase();
+      if (id.contains(_heartRateMeasurementShortId)) {
+        hrCharacteristic = characteristic;
+        break;
+      }
+    }
+    if (hrCharacteristic == null) {
+      await disconnect();
+      return false;
+    }
+
+    try {
+      await hrCharacteristic.setNotifyValue(true);
+    } on Exception {
+      await disconnect();
+      return false;
+    }
+    await _hrSubscription?.cancel();
+    _hrSubscription = hrCharacteristic.lastValueStream.listen((data) {
+      if (data.isEmpty) {
+        return;
+      }
+      final bpm = data.length > 1 ? data[1] : data.first;
+      if (!_heartRate.isClosed) {
+        _heartRate.add(bpm);
+      }
+    });
+
+    _emitState(SensorState.streaming);
+    return true;
+  }
+
+  Future<void> disconnect() async {
+    await _hrSubscription?.cancel();
+    _hrSubscription = null;
+
+    final device = _device;
+    if (device != null) {
+      try {
+        await device.disconnect();
+      } catch (_) {
+        // Ignore disconnection errors; device might already be disconnected.
+      }
+      _device = null;
+    }
+
+    _emitState(SensorState.off);
+  }
+
+  Future<void> dispose() async {
+    await disconnect();
+    await _state.close();
+    await _heartRate.close();
+  }
 }
