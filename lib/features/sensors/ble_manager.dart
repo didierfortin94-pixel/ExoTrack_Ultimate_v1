@@ -62,7 +62,10 @@ class BleManager {
 
     _emitState(SensorState.connecting);
     try {
-      await device.connect(timeout: const Duration(seconds: 10));
+      await device.connect(
+        timeout: const Duration(seconds: 10),
+        license: 'DEMO-LICENSE',
+      );
     } on Exception {
       await disconnect();
       return false;
