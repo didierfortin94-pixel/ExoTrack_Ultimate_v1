@@ -18,7 +18,7 @@ class ExoTheme {
         ),
       ),
       appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF0F1216)),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: const Color(0xFF151A20),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 0,
