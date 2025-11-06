@@ -1,0 +1,12 @@
+
+sport: soccer
+cluster: invasion_terrain
+phases:
+  in_season:
+    level_all: { periodization: concurrent }
+    weekly_mix: { aerobic: 0.25, sprints_cod: 0.25, strength: 0.15, power: 0.25, prehab: 0.10 }
+templates:
+  power_session:
+    main:
+      - exercise_tags: ["sprint","cod"]
+        prescription: { scheme: { blocks: 4, micro_sets: 6, reps: 1, rest_intra: 15, rest_inter: 180 }, load: { type: "%1RM", value: 0.5, velocity: 0.9 } }

@@ -1,0 +1,1 @@
+- Code split clair, BLE isolé, YAML loader OK. À ajouter: tests + CI.

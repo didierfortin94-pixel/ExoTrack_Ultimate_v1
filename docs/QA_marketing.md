@@ -1,0 +1,1 @@
+- UI sombre + bleu, proposition de valeur claire. Onboarding à ajouter.

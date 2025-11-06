@@ -1,0 +1,19 @@
+// Top-level build file — NE PAS appliquer de plugin Flutter ici.
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// Tâche clean simple
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

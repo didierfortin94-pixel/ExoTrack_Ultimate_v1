@@ -1,0 +1,1 @@
+- Mix hebdo par sport/phase OK (5 sports). À étendre à 10–50.

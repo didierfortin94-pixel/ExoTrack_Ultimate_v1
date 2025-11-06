@@ -1,0 +1,12 @@
+
+sport: basketball
+cluster: invasion_court
+phases:
+  in_season:
+    level_all: { periodization: concurrent }
+    weekly_mix: { strength: 0.20, power: 0.60, pe: 0.20 }
+templates:
+  power_session:
+    main:
+      - exercise_tags: ["squat","bands","power"]
+        prescription: { scheme: { blocks: 4, micro_sets: 6, reps: 1, rest_intra: 15, rest_inter: 180 }, load: { type: "%1RM", value: 0.5, velocity: 0.9 } }

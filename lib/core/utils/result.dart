@@ -1,0 +1,1 @@
+class Result<T> {final T? data; final Object? error; Result.ok(this.data): error=null; Result.err(this.error): data=null; bool get isOk=> error==null;}
