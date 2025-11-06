@@ -64,7 +64,7 @@ class BleManager {
     try {
       await device.connect(
         timeout: const Duration(seconds: 10),
-        license: 'DEMO-LICENSE',
+        license: License.free,
       );
     } on Exception {
       await disconnect();
