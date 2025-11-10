@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.exotrack_ultimate"
-        minSdkVersion 26
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
         versionCode 1
         versionName "1.0"
@@ -26,14 +26,6 @@ android {
         }
         debug {
             debuggable true
-            minifyEnabled false
-            shrinkResources false
-        }
-        profile {
-            initWith(debug)
-            matchingFallbacks = ["debug"]
-            minifyEnabled false
-            shrinkResources false
         }
     }
 
