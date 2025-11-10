@@ -66,34 +66,40 @@ class _StartWorkoutPageState extends State<StartWorkoutPage> {
   }
 
   Future<void> _connectPolar() async {
-    if (_isConnectingPolar) return;
-    setState(() => _isConnectingPolar = true);
+    setState(() {
+      _isConnectingPolar = true;
+      eventText = 'Connexion au Polar H10…';
+    });
+
     final connected = await engine.startWithPolar();
     if (!mounted) return;
+
     setState(() {
       _isConnectingPolar = false;
-      if (!connected) {
-        eventText = 'Polar H10 introuvable';
-      }
+      eventText = connected ? 'Polar H10 connecté' : 'Polar H10 introuvable';
     });
   }
 
   Future<void> _startSession() async {
     await engine.start(session);
+    if (!mounted) return;
+    setState(() {
+      eventText = 'Séance démarrée';
+    });
   }
 
   String get _sensorStateLabel {
     switch (_sensorState) {
       case SensorState.off:
-        return 'Capteur déconnecté';
+        return 'Capteur inactif';
       case SensorState.scanning:
-        return 'Recherche du capteur…';
+        return 'Recherche de capteurs…';
       case SensorState.connecting:
         return 'Connexion en cours…';
       case SensorState.ready:
-        return 'Capteur prêt';
+        return 'Polar prêt';
       case SensorState.streaming:
-        return 'Données en direct';
+        return 'Streaming en direct';
     }
   }
 
