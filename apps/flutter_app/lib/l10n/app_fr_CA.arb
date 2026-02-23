@@ -1,0 +1,16 @@
+{
+  "@@locale": "fr_CA",
+  "appTitle": "CoachPulse",
+  "today": "Aujourd’hui",
+  "calendar": "Calendrier",
+  "dashboard": "Tableau de bord",
+  "privacy": "Confidentialité",
+  "login": "Connexion",
+  "email": "Courriel",
+  "password": "Mot de passe",
+  "roleCoach": "Coach",
+  "roleClient": "Client",
+  "sessionOfDay": "Séance du jour",
+  "completeSession": "Terminer la séance",
+  "invitationCode": "Code d’invitation"
+}
