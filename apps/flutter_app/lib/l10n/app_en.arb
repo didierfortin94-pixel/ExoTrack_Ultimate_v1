@@ -1,0 +1,16 @@
+{
+  "@@locale": "en",
+  "appTitle": "CoachPulse",
+  "today": "Today",
+  "calendar": "Calendar",
+  "dashboard": "Dashboard",
+  "privacy": "Privacy",
+  "login": "Login",
+  "email": "Email",
+  "password": "Password",
+  "roleCoach": "Coach",
+  "roleClient": "Client",
+  "sessionOfDay": "Session of the day",
+  "completeSession": "Complete session",
+  "invitationCode": "Invitation code"
+}
